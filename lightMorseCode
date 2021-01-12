@@ -1,0 +1,97 @@
+# -*- coding: 850 -*-
+#!/usr/bin/env python3
+
+'''This is for use in Raspberry Pi'''
+from gpiozero import LED
+from time import sleep
+
+
+ledVerde = LED(17) 	#green led
+ledRojo = LED(27)	#red led
+
+# These variables control the duration of each element. They are all
+# relative to the duration of the dot (durPunto) this way, it is only
+# necessary to change a single value for the rest change accordingly. 
+
+durPunto = 0.2	#dot duration
+durRaya = durPunto*3 #dash duration
+durSilLetras = durPunto*3 #silence between letters duration
+durSilPalabras = (durRaya*3)-durSilLetras #silence between words
+
+def punto():
+	#a function that defines what happens with a dot
+	ledVerde.on()
+	sleep(durPunto)
+	ledVerde.off()
+	sleep(durSilLetras)
+	return
+
+def raya():
+	#a function that defines what happens with a dash
+	ledVerde.on()
+	sleep(durRaya)
+	ledVerde.off()
+	sleep(durSilLetras)
+	return
+
+#silence between words
+silencioLargo = sleep(durSilPalabras)
+
+# A dictionary with all the letters and their values in the Morse code
+# It includes the "Ñ" :)
+
+codigoMorse = {'A': [punto,raya], 'B':[raya,punto,punto,punto], 'C':[raya,punto,raya,punto], 'D':[raya,punto,punto],
+'E':[punto], 'F':[punto,punto,raya,punto], 'G':[raya,raya,punto], 'H':[punto,punto,punto,punto], 'I':[punto,punto],
+'J':[punto,raya,raya,raya], 'K':[raya,punto,raya], 'L':[punto,raya,punto,punto], 'M':[raya,raya], 'N':[raya,punto],
+'Ñ':[raya,raya,punto,raya,raya], 'O':[raya,raya,raya], 'P':[punto,raya,raya,punto], 'Q':[raya,raya,punto,raya], 
+'R':[punto,raya,punto], 'S':[punto,punto,punto],'T':[raya], 'U':[punto,punto,raya], 'V':[punto,punto,punto,raya],
+'W':[punto,raya,raya], 'X':[raya,punto,punto,raya], 'Y':[raya,punto,raya,raya], 'Z':[raya,raya,punto,punto], 
+'0':[raya,raya,raya,raya,raya], '1':[punto,raya,raya,raya,raya], '2':[punto,punto,raya,raya,raya],'3':[punto,punto,punto,raya,raya],
+'4':[punto,punto,punto,punto,raya],'5':[punto,punto,punto,punto,punto], '6':[raya,punto,punto,punto,punto],
+'7':[raya,raya,punto,punto,punto], '8':[raya,raya,raya,punto,punto], '9':[raya,raya,raya,raya,punto],
+'.':[punto,raya,punto,raya,punto,raya], ',':[raya,punto,raya,punto,raya,raya], '?':[punto,punto,raya,raya,punto,punto],
+'!':[raya,raya,punto,punto,raya,raya], ' ':[silencioLargo]}
+
+
+# This is the function that actually executes the Morse code.
+# It takes an input and translates it into Morse code, using lights
+def claveMorse():
+	#The red led is turned on, to show that it's ready to get some input
+	ledRojo.on()
+	
+	#This asks the user to enter a message to be translated
+	mensaje = input('write something: ')
+	
+	
+	ledRojo.off()
+	#This gives the user a few seconds between entering the input
+	#and executing the translation.
+	sleep(3)  
+	
+	
+	mensaje_cap = mensaje.upper() #capitalizes the message
+	
+	#analizes each element in the message and translates it
+	traduccion = ''
+	for i in mensaje_cap:
+		for j in codigoMorse[i]:
+			if j is punto:
+				punto()
+				traduccion += '.'
+			elif j is raya:
+				raya()
+				traduccion += '-'
+			elif j is silencioLargo:
+				sleep(durSilPalabras)
+				traduccion += ' '
+			else:
+				return
+		
+	# Turns red light on to show the translation is complete
+	ledRojo.on()
+	sleep(3)
+	ledRojo.off()
+	print(f'your code is: \n {traduccion}')
+	print('fin')
+	
+claveMorse()
